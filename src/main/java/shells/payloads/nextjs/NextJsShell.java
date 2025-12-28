@@ -8,7 +8,6 @@ import core.ui.component.model.DbInfo;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -30,24 +29,18 @@ public class NextJsShell extends AbstractPayload {
         this.shell = shellContext;
     }
 
-    /**
-     * 加载payload文件，优先从源码目录加载，如果不存在则从JAR包中加载
-     */
     private InputStream loadPayloadFile(String resourcePath) {
         try {
-            // 首先尝试从源码目录加载
             String sourcePath = "src/main/java/shells/payloads/nextjs/" + resourcePath;
             if (Files.exists(Paths.get(sourcePath))) {
                 return new FileInputStream(new File(sourcePath));
             }
 
-            // 如果源码目录不存在，尝试从JAR包中加载
             InputStream inputStream = NextJsShell.class.getResourceAsStream(resourcePath);
             if (inputStream != null) {
                 return inputStream;
             }
 
-            // 如果都找不到，尝试使用ClassLoader加载
             inputStream = NextJsShell.class.getClassLoader().getResourceAsStream(
                     "shells/payloads/nextjs/" + resourcePath
             );
@@ -83,16 +76,13 @@ public class NextJsShell extends AbstractPayload {
             String codeString = new String(result);
             String trimmed = codeString.trim();
 
-            // 检查是否是 "ok"
             if (trimmed.equals("ok")) {
                 this.isAlive = true;
                 return true;
             }
 
-            // 尝试解析 JSON 格式的响应（包含 sessionId）
             if (trimmed.startsWith("{") && trimmed.contains("sessionId")) {
                 try {
-                    // 简单的 JSON 解析，提取 sessionId
                     int sessionIdStart = trimmed.indexOf("\"sessionId\"");
                     if (sessionIdStart != -1) {
                         int valueStart = trimmed.indexOf("\"", sessionIdStart + 11) + 1;
@@ -107,11 +97,9 @@ public class NextJsShell extends AbstractPayload {
                         }
                     }
                 } catch (Exception jsonEx) {
-                    // JSON 解析失败，继续检查其他格式
                 }
             }
 
-            // 如果都不匹配，记录错误
             Log.error(codeString);
             return false;
         } catch (Exception e) {
